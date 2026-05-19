@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceylora Salon | Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/register.css" />
+  </head>
+  <body class="register-page">
+    <div class="register-bg"></div>
+
+    <main class="register-shell">
+      <section class="register-card">
+        <div class="register-brand">Ceylora Salon</div>
+        <p class="eyebrow">Join Ceylora Salon</p>
+        <h1>Create Account</h1>
+
+        <input
+          id="name"
+          name="registerName"
+          autocomplete="off"
+          placeholder="Name"
+          class="register-input"
+        />
+        <input
+          id="email"
+          name="registerEmail"
+          autocomplete="off"
+          placeholder="Email"
+          class="register-input"
+        />
+        <input
+          id="contactNo"
+          name="registerContactNo"
+          autocomplete="off"
+          placeholder="Contact Number"
+          class="register-input"
+        />
+        <input
+          id="password"
+          name="registerPassword"
+          autocomplete="new-password"
+          type="password"
+          placeholder="Password"
+          class="register-input"
+        />
+
+        <div class="profile-image-section">
+          <div class="profile-image-preview-wrap">
+            <img
+              id="registerProfilePreview"
+              class="profile-image-preview"
+              alt="Profile preview"
+            />
+            <div
+              id="registerProfilePlaceholder"
+              class="profile-image-placeholder"
+            >
+              No photo
+            </div>
+          </div>
+          <input
+            id="profileImage"
+            type="file"
+            accept="image/*"
+            class="register-input"
+          />
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="clearProfileImage()"
+          >
+            Remove Photo
+          </button>
+        </div>
+
+        <p class="note">New accounts are created as User by default.</p>
+
+        <p id="message" class="form-message"></p>
+
+        <button onclick="registerUser()" class="btn-primary">Register</button>
+        <a class="back-link" href="/login">Back to login</a>
+      </section>
+    </main>
+
+    <script>
+      const MAX_PROFILE_IMAGE_BYTES = 2 * 1024 * 1024;
+      let registerProfileImageData = null;
+
+      function updateProfilePreview(dataUrl) {
+        const preview = document.getElementById("registerProfilePreview");
+        const placeholder = document.getElementById(
+          "registerProfilePlaceholder",
+        );
+        if (!preview || !placeholder) {
+          return;
+        }
+
+        if (dataUrl) {
+          preview.src = dataUrl;
+          preview.classList.add("show");
+          placeholder.style.display = "none";
+        } else {
+          preview.removeAttribute("src");
+          preview.classList.remove("show");
+          placeholder.style.display = "grid";
+        }
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(new Error("Could not read image"));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function clearProfileImage() {
+        registerProfileImageData = null;
+        const picker = document.getElementById("profileImage");
+        if (picker) {
+          picker.value = "";
+        }
+        updateProfilePreview(null);
+      }
+
+      function bindProfileImagePicker() {
+        const picker = document.getElementById("profileImage");
+        if (!picker) {
+          return;
+        }
+
+        picker.addEventListener("change", async (event) => {
+          const file = event.target.files?.[0];
+          const msg = document.getElementById("message");
+          if (!file) {
+            clearProfileImage();
+            return;
+          }
+
+          if (!file.type.startsWith("image/")) {
+            msg.className = "form-message error";
+            msg.textContent = "Please select a valid image file";
+            clearProfileImage();
+            return;
+          }
+
+          if (file.size > MAX_PROFILE_IMAGE_BYTES) {
+            msg.className = "form-message error";
+            msg.textContent = "Image must be smaller than 2MB";
+            clearProfileImage();
+            return;
+          }
+
+          try {
+            registerProfileImageData = await fileToDataUrl(file);
+            updateProfilePreview(registerProfileImageData);
+            msg.className = "form-message";
+            msg.textContent = "";
+          } catch (error) {
+            msg.className = "form-message error";
+            msg.textContent = error.message;
+            clearProfileImage();
+          }
+        });
+      }
+
+      function clearRegisterFields() {
+        const name = document.getElementById("name");
+        const email = document.getElementById("email");
+        const contactNo = document.getElementById("contactNo");
+        const password = document.getElementById("password");
+        if (name) {
+          name.value = "";
+        }
+        if (email) {
+          email.value = "";
+        }
+        if (contactNo) {
+          contactNo.value = "";
+        }
+        if (password) {
+          password.value = "";
+        }
+        clearProfileImage();
+      }
+
+      window.addEventListener("DOMContentLoaded", clearRegisterFields);
+      window.addEventListener("pageshow", clearRegisterFields);
+      window.addEventListener("DOMContentLoaded", bindProfileImagePicker);
+
+      function registerUser() {
+        const payload = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          contactNo: document.getElementById("contactNo").value,
+          password: document.getElementById("password").value,
+          profileImage: registerProfileImageData,
+        };
+
+        fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.message || "Registration failed");
+            }
+            return data;
+          })
+          .then(() => {
+            const msg = document.getElementById("message");
+            msg.className = "form-message success";
+            msg.textContent = "Registration successful. Please login.";
+            setTimeout(() => (window.location.href = "/login"), 1200);
+          })
+          .catch((err) => {
+            const msg = document.getElementById("message");
+            msg.className = "form-message error";
+            msg.textContent = err.message;
+          });
+      }
+    </script>
+  </body>
+</html>

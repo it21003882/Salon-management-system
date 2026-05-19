@@ -1,0 +1,677 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceylora Salon | Customer Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/customer.css" />
+  </head>
+  <body class="customer-page">
+    <div class="page-overlay"></div>
+
+    <main class="dashboard-wrap">
+      <header class="topbar">
+        <div class="topbar-main">
+          <div class="brand-logo">Ceylora Salon</div>
+          <div class="dashboard-banner">
+            <p class="dashboard-banner-title">Welcome Back to Ceylora Salon</p>
+            <p class="dashboard-banner-subtitle">
+              Discover beauty, style, and confidence.
+            </p>
+          </div>
+          <p id="customerWelcomeMessage" class="customer-welcome"></p>
+        </div>
+        <button onclick="logout()" class="btn-neutral">Logout</button>
+      </header>
+
+      <nav class="tabs-nav" aria-label="Dashboard sections">
+        <button
+          id="tabBtn-book"
+          class="tab-btn active"
+          onclick="switchTab('book')"
+        >
+          Book Appointment
+        </button>
+        <button
+          id="tabBtn-appointments"
+          class="tab-btn"
+          onclick="switchTab('appointments')"
+        >
+          My Appointments
+        </button>
+        <button
+          id="tabBtn-profile"
+          class="tab-btn"
+          onclick="switchTab('profile')"
+        >
+          My Profile
+        </button>
+      </nav>
+
+      <section id="tab-profile" class="panel tab-panel">
+        <h2>My Profile</h2>
+        <div class="profile-photo-block">
+          <div class="profile-photo-preview-wrap">
+            <img
+              id="profileImagePreview"
+              class="profile-photo-preview"
+              alt="Profile picture"
+            />
+            <div id="profileImagePlaceholder" class="profile-photo-placeholder">
+              No photo
+            </div>
+          </div>
+          <input
+            id="profileImageInput"
+            type="file"
+            accept="image/*"
+            class="field-input"
+          />
+          <button
+            type="button"
+            class="btn-neutral"
+            onclick="removeProfileImage()"
+          >
+            Remove Photo
+          </button>
+        </div>
+        <input id="profileName" placeholder="Name" class="field-input" />
+        <input id="profileEmail" placeholder="Email" class="field-input" />
+        <input
+          id="profileContactNo"
+          placeholder="Contact Number"
+          class="field-input"
+        />
+        <input
+          id="profilePassword"
+          type="password"
+          autocomplete="new-password"
+          placeholder="New password (optional)"
+          class="field-input"
+        />
+        <p id="profileMsg" class="form-message"></p>
+        <button onclick="updateProfile()" class="btn-primary">
+          Update Profile
+        </button>
+      </section>
+
+      <section id="tab-book" class="panel tab-panel">
+        <h2>Book Appointment</h2>
+
+        <select id="serviceId" class="field-input"></select>
+        <input id="date" type="datetime-local" class="field-input" />
+        <p id="bookMsg" class="form-message"></p>
+
+        <button onclick="bookAppointment()" class="btn-accent">Book</button>
+      </section>
+
+      <section id="tab-appointments" class="panel tab-panel">
+        <h2>My Appointments</h2>
+        <input
+          id="appointmentsSearch"
+          class="field-input search-input"
+          type="search"
+          placeholder="Search by appointment id, service name, or date"
+          oninput="renderMyAppointments()"
+        />
+        <div class="table-wrap">
+          <table class="appointments-table">
+            <thead>
+              <tr>
+                <th>Appointment ID</th>
+                <th>Service Name</th>
+                <th>Date & Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsList"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="toastPopup"
+      class="toast-popup"
+      role="status"
+      aria-live="polite"
+    ></div>
+
+    <div id="rescheduleModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rescheduleTitle"
+      >
+        <h3 id="rescheduleTitle">Reschedule Appointment</h3>
+        <p class="modal-helper">
+          Pick a new date and time for your appointment.
+        </p>
+        <input id="rescheduleDate" type="datetime-local" class="field-input" />
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-neutral"
+            onclick="closeRescheduleModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-warning"
+            onclick="confirmReschedule()"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="customer-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Ceylora Salon</h3>
+          <p>Premium beauty and wellness services</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li>
+              <a
+                href="#"
+                onclick="
+                  switchTab('book');
+                  return false;
+                "
+                >Book Appointment</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="
+                  switchTab('appointments');
+                  return false;
+                "
+                >My Appointments</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                onclick="
+                  switchTab('profile');
+                  return false;
+                "
+                >My Profile</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <p>Email: info@ceylora.com</p>
+          <p>Phone: +94 713763638</p>
+          <p>Address: 123  St, Colombo, Sri Lanka</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Ceylora Salon. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      const MAX_PROFILE_IMAGE_BYTES = 2 * 1024 * 1024;
+      let toastTimeoutId;
+      let myAppointmentsCache = [];
+      let currentProfileImage = null;
+
+      function switchTab(tabName) {
+        const names = ["profile", "book", "appointments"];
+        names.forEach((name) => {
+          const panel = document.getElementById(`tab-${name}`);
+          const button = document.getElementById(`tabBtn-${name}`);
+          if (panel) {
+            panel.classList.toggle("active", name === tabName);
+          }
+          if (button) {
+            button.classList.toggle("active", name === tabName);
+          }
+        });
+      }
+
+      function getLoggedInUser() {
+        const raw = localStorage.getItem("loggedInUser");
+        return raw ? JSON.parse(raw) : null;
+      }
+
+      function guardCustomerPage() {
+        const user = getLoggedInUser();
+        if (!user || user.role !== "USER") {
+          window.location.href = "/login";
+        }
+      }
+
+      function renderWelcomeMessage() {
+        const welcomeEl = document.getElementById("customerWelcomeMessage");
+        if (!welcomeEl) {
+          return;
+        }
+
+        const user = getLoggedInUser();
+        const userLabel = user?.name || user?.email || "User";
+        welcomeEl.textContent = `Hello, welcome ${userLabel}`;
+      }
+
+      function updateProfileImagePreview(imageData) {
+        const preview = document.getElementById("profileImagePreview");
+        const placeholder = document.getElementById("profileImagePlaceholder");
+        if (!preview || !placeholder) {
+          return;
+        }
+
+        if (imageData) {
+          preview.src = imageData;
+          preview.classList.add("show");
+          placeholder.style.display = "none";
+        } else {
+          preview.removeAttribute("src");
+          preview.classList.remove("show");
+          placeholder.style.display = "grid";
+        }
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = () => reject(new Error("Could not read image"));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function removeProfileImage() {
+        currentProfileImage = null;
+        const picker = document.getElementById("profileImageInput");
+        if (picker) {
+          picker.value = "";
+        }
+        updateProfileImagePreview(null);
+      }
+
+      function bindProfileImagePicker() {
+        const picker = document.getElementById("profileImageInput");
+        if (!picker) {
+          return;
+        }
+
+        picker.addEventListener("change", async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) {
+            removeProfileImage();
+            return;
+          }
+
+          if (!file.type.startsWith("image/")) {
+            showToast("Please select a valid image file", "error");
+            removeProfileImage();
+            return;
+          }
+
+          if (file.size > MAX_PROFILE_IMAGE_BYTES) {
+            showToast("Image must be smaller than 2MB", "error");
+            removeProfileImage();
+            return;
+          }
+
+          try {
+            currentProfileImage = await fileToDataUrl(file);
+            updateProfileImagePreview(currentProfileImage);
+          } catch (error) {
+            showToast(error.message, "error");
+            removeProfileImage();
+          }
+        });
+      }
+
+      function logout() {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "/login";
+      }
+
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toastPopup");
+        if (!toast) {
+          return;
+        }
+
+        toast.textContent = message;
+        toast.className = `toast-popup ${type} show`;
+
+        if (toastTimeoutId) {
+          clearTimeout(toastTimeoutId);
+        }
+
+        toastTimeoutId = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2400);
+      }
+
+      function loadServices() {
+        fetch("/services")
+          .then((res) => res.json())
+          .then((data) => {
+            const select = document.getElementById("serviceId");
+            select.innerHTML = "";
+
+            data.forEach((item) => {
+              const option = document.createElement("option");
+              option.value = item.id;
+              option.textContent = `${item.name} - $${item.price}`;
+              select.appendChild(option);
+            });
+          })
+          .catch(() => {
+            showToast("Could not load services", "error");
+          });
+      }
+
+      function bookAppointment() {
+        const user = getLoggedInUser();
+        const payload = {
+          serviceId: Number(document.getElementById("serviceId").value),
+          date: document.getElementById("date").value,
+        };
+
+        fetch(`/appointments?userId=${user.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Could not book appointment");
+            }
+            return res.json();
+          })
+          .then(() => {
+            const msg = document.getElementById("bookMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast("Appointment booked");
+            document.getElementById("date").value = "";
+            loadMyAppointments();
+            switchTab("appointments");
+          })
+          .catch((err) => {
+            const msg = document.getElementById("bookMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast(err.message, "error");
+          });
+      }
+
+      function loadProfile() {
+        const user = getLoggedInUser();
+        fetch(`/users/me?userId=${user.id}`)
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Could not load profile");
+            }
+            return res.json();
+          })
+          .then((data) => {
+            document.getElementById("profileName").value = data.name || "";
+            document.getElementById("profileEmail").value = data.email || "";
+            document.getElementById("profileContactNo").value =
+              data.contactNo || "";
+            currentProfileImage = data.profileImage || null;
+            updateProfileImagePreview(currentProfileImage);
+          })
+          .catch((err) => {
+            const msg = document.getElementById("profileMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast(err.message, "error");
+          });
+      }
+
+      function updateProfile() {
+        const user = getLoggedInUser();
+        const payload = {
+          name: document.getElementById("profileName").value,
+          email: document.getElementById("profileEmail").value,
+          contactNo: document.getElementById("profileContactNo").value,
+          password: document.getElementById("profilePassword").value,
+          profileImage: currentProfileImage,
+        };
+
+        fetch(`/users/me?userId=${user.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.message || "Could not update profile");
+            }
+            return data;
+          })
+          .then((data) => {
+            localStorage.setItem("loggedInUser", JSON.stringify(data));
+            renderWelcomeMessage();
+            document.getElementById("profilePassword").value = "";
+            const msg = document.getElementById("profileMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast("Profile updated");
+          })
+          .catch((err) => {
+            const msg = document.getElementById("profileMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast(err.message, "error");
+          });
+      }
+
+      function clearProfilePasswordField() {
+        const passwordInput = document.getElementById("profilePassword");
+        if (passwordInput) {
+          passwordInput.value = "";
+        }
+      }
+
+      function formatDateTime(dateTimeStr) {
+        if (!dateTimeStr) {
+          return "Not set";
+        }
+        const date = new Date(dateTimeStr);
+        if (Number.isNaN(date.getTime())) {
+          return dateTimeStr;
+        }
+        const dateFormatted = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+        const timeFormatted = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+        return `${dateFormatted} at ${timeFormatted}`;
+      }
+
+      function loadMyAppointments() {
+        const user = getLoggedInUser();
+        fetch(`/appointments/my?userId=${user.id}`)
+          .then((res) => res.json())
+          .then((data) => {
+            myAppointmentsCache = Array.isArray(data) ? data : [];
+            renderMyAppointments();
+          })
+          .catch(() => {
+            showToast("Could not load appointments", "error");
+          });
+      }
+
+      function renderMyAppointments() {
+        const box = document.getElementById("appointmentsList");
+        const q = (document.getElementById("appointmentsSearch")?.value || "")
+          .trim()
+          .toLowerCase();
+        box.innerHTML = "";
+
+        myAppointmentsCache
+          .filter((item) => {
+            if (!q) {
+              return true;
+            }
+            const serviceName =
+              item.serviceName || `Service #${item.serviceId}`;
+            const text =
+              `${item.id} ${serviceName} ${item.date || ""}`.toLowerCase();
+            return text.includes(q);
+          })
+          .forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.id}</td>
+              <td>${item.serviceName || `Service #${item.serviceId}`}</td>
+              <td>${formatDateTime(item.date)}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-warning" onclick="rescheduleAppointment(${item.id})">Reschedule</button>
+                  <button class="btn-danger" onclick="cancelAppointment(${item.id})">Cancel</button>
+                </div>
+              </td>
+            `;
+            box.appendChild(row);
+          });
+      }
+
+      function rescheduleAppointment(id) {
+        const modal = document.getElementById("rescheduleModal");
+        const input = document.getElementById("rescheduleDate");
+        if (!modal || !input) {
+          return;
+        }
+
+        modal.dataset.appointmentId = String(id);
+        input.value = "";
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+        input.focus();
+      }
+
+      function closeRescheduleModal() {
+        const modal = document.getElementById("rescheduleModal");
+        const input = document.getElementById("rescheduleDate");
+        if (!modal || !input) {
+          return;
+        }
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        delete modal.dataset.appointmentId;
+        input.value = "";
+      }
+
+      function confirmReschedule() {
+        const user = getLoggedInUser();
+        const modal = document.getElementById("rescheduleModal");
+        const input = document.getElementById("rescheduleDate");
+        if (!modal || !input) {
+          return;
+        }
+
+        const appointmentId = Number(modal.dataset.appointmentId);
+        const newDate = input.value;
+        if (!newDate) {
+          showToast("Please select date and time", "error");
+          return;
+        }
+
+        fetch(`/appointments/${appointmentId}?userId=${user.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date: newDate }),
+        })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(
+                data.message || "Could not reschedule appointment",
+              );
+            }
+            return data;
+          })
+          .then(() => {
+            const msg = document.getElementById("bookMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast("Appointment rescheduled");
+            closeRescheduleModal();
+            loadMyAppointments();
+            switchTab("appointments");
+          })
+          .catch((err) => {
+            const msg = document.getElementById("bookMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast(err.message, "error");
+          });
+      }
+
+      function cancelAppointment(id) {
+        const user = getLoggedInUser();
+        fetch(`/appointments/${id}?userId=${user.id}`, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Could not cancel appointment");
+            }
+            showToast("Appointment canceled");
+            loadMyAppointments();
+          })
+          .catch((err) => {
+            showToast(err.message, "error");
+          });
+      }
+
+      guardCustomerPage();
+      renderWelcomeMessage();
+      bindProfileImagePicker();
+      loadProfile();
+      loadServices();
+      loadMyAppointments();
+      clearProfilePasswordField();
+      switchTab("book");
+
+      window.addEventListener("pageshow", clearProfilePasswordField);
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeRescheduleModal();
+        }
+      });
+
+      const rescheduleModal = document.getElementById("rescheduleModal");
+      if (rescheduleModal) {
+        rescheduleModal.addEventListener("click", (event) => {
+          if (event.target === rescheduleModal) {
+            closeRescheduleModal();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
