@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceylora Salon | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/login.css" />
+  </head>
+  <body class="auth-page">
+    <div class="auth-bg"></div>
+
+    <main class="auth-shell">
+      <section class="auth-card">
+        <div class="auth-brand">Ceylora Salon</div>
+        <p class="eyebrow">Welcome back</p>
+        <h1>Login</h1>
+        <p class="helper">No account? <a href="/register">Register here</a></p>
+
+        <input
+          id="email"
+          name="loginEmail"
+          autocomplete="off"
+          placeholder="Email"
+          class="auth-input"
+        />
+        <input
+          id="password"
+          name="loginPassword"
+          autocomplete="new-password"
+          type="password"
+          placeholder="Password"
+          class="auth-input"
+        />
+        <p id="error" class="form-message error"></p>
+
+        <button onclick="login()" class="btn-primary">Login</button>
+      </section>
+    </main>
+
+    <script>
+      function clearLoginFields() {
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        if (email) {
+          email.value = "";
+        }
+        if (password) {
+          password.value = "";
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", clearLoginFields);
+      window.addEventListener("pageshow", clearLoginFields);
+
+      function login() {
+        document.getElementById("error").textContent = "";
+
+        fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+          }),
+        })
+          .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+              throw new Error(data.message || "Login failed");
+            }
+            return data;
+          })
+          .then((data) => {
+            localStorage.setItem("loggedInUser", JSON.stringify(data));
+
+            if (data.role === "ADMIN") {
+              window.location.href = "/admin";
+            } else {
+              window.location.href = "/user";
+            }
+          })
+          .catch((err) => {
+            document.getElementById("error").textContent = err.message;
+          });
+      }
+    </script>
+  </body>
+</html>
