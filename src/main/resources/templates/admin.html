@@ -1,0 +1,853 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceylora Salon | Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body class="admin-page">
+    <div class="admin-background"></div>
+
+    <main class="admin-wrap">
+      <header class="topbar">
+        <div>
+          <div class="brand-logo">Ceylora Salon</div>
+          <h1>Admin Dashboard</h1>
+          <p id="adminWelcomeMessage" class="admin-welcome"></p>
+        </div>
+        <button onclick="logout()" class="btn-neutral">Logout</button>
+      </header>
+
+      <nav class="tabs-nav" aria-label="Admin sections">
+        <button
+          id="tabBtn-add-service"
+          class="tab-btn active"
+          onclick="switchTab('add-service')"
+        >
+          Add Service
+        </button>
+        <button id="tabBtn-users" class="tab-btn" onclick="switchTab('users')">
+          Users
+        </button>
+        <button
+          id="tabBtn-services"
+          class="tab-btn"
+          onclick="switchTab('services')"
+        >
+          Services
+        </button>
+        <button
+          id="tabBtn-appointments"
+          class="tab-btn"
+          onclick="switchTab('appointments')"
+        >
+          Appointments
+        </button>
+      </nav>
+
+      <section id="tab-add-service" class="panel tab-panel active">
+        <h2>Add Service</h2>
+        <input
+          id="serviceName"
+          placeholder="Service name"
+          class="field-input"
+        />
+        <input
+          id="servicePrice"
+          type="number"
+          step="0.01"
+          placeholder="Price"
+          class="field-input"
+        />
+        <p id="serviceMsg" class="form-message"></p>
+        <button onclick="addService()" class="btn-primary">Save</button>
+      </section>
+
+      <section id="tab-users" class="panel tab-panel">
+        <h2>Users</h2>
+        <input
+          id="usersSearch"
+          class="field-input search-input"
+          type="search"
+          placeholder="Search users by name, email, contact, role"
+          oninput="renderUsers()"
+        />
+        <div id="usersList" class="users-list"></div>
+      </section>
+
+      <section id="tab-services" class="panel tab-panel">
+        <h2>Services</h2>
+        <input
+          id="servicesSearch"
+          class="field-input search-input"
+          type="search"
+          placeholder="Search services by name or price"
+          oninput="renderServices()"
+        />
+        <div id="servicesList" class="services-list"></div>
+      </section>
+
+      <section id="tab-appointments" class="panel tab-panel">
+        <h2>Appointments</h2>
+        <button
+          onclick="downloadAppointmentsPdf()"
+          class="btn-primary"
+          style="margin-bottom: 8px"
+        >
+          Download Report
+        </button>
+        <input
+          id="appointmentsSearch"
+          class="field-input search-input"
+          type="search"
+          placeholder="Search appointments by user, service, id, date"
+          oninput="renderAppointments()"
+        />
+        <div class="table-wrap">
+          <table class="appointments-table">
+            <thead>
+              <tr>
+                <th>Appointment ID</th>
+                <th>User Name</th>
+                <th>Service Name</th>
+                <th>Date & Time</th>
+              </tr>
+            </thead>
+            <tbody id="appointmentsList"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="serviceEditModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="serviceEditTitle"
+      >
+        <h3 id="serviceEditTitle">Update Service</h3>
+        <p class="modal-helper">Edit service details and save your changes.</p>
+        <input
+          id="editServiceName"
+          class="field-input"
+          placeholder="Service name"
+        />
+        <input
+          id="editServicePrice"
+          type="number"
+          step="0.01"
+          class="field-input"
+          placeholder="Price"
+        />
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-neutral"
+            onclick="closeServiceEditModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-primary"
+            onclick="confirmServiceUpdate()"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteUserModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteUserTitle"
+      >
+        <h3 id="deleteUserTitle">Delete User</h3>
+        <p id="deleteUserText" class="modal-helper">
+          Are you sure you want to delete this user?
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-neutral"
+            onclick="closeDeleteUserModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-danger"
+            onclick="confirmDeleteUser()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteServiceModal" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteServiceTitle"
+      >
+        <h3 id="deleteServiceTitle">Delete Service</h3>
+        <p id="deleteServiceText" class="modal-helper">
+          Are you sure you want to delete this service?
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-neutral"
+            onclick="closeDeleteServiceModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-danger"
+            onclick="confirmDeleteService()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="toastPopup"
+      class="toast-popup"
+      role="status"
+      aria-live="polite"
+    ></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+    <script>
+      let usersCache = [];
+      let servicesCache = [];
+      let appointmentsCache = [];
+      let editingServiceId = null;
+      let deletingUserId = null;
+      let deletingServiceId = null;
+      let toastTimeoutId;
+
+      function switchTab(tabName) {
+        const names = ["add-service", "users", "services", "appointments"];
+        names.forEach((name) => {
+          const panel = document.getElementById(`tab-${name}`);
+          const button = document.getElementById(`tabBtn-${name}`);
+          if (panel) {
+            panel.classList.toggle("active", name === tabName);
+          }
+          if (button) {
+            button.classList.toggle("active", name === tabName);
+          }
+        });
+      }
+
+      function getLoggedInUser() {
+        const raw = localStorage.getItem("loggedInUser");
+        return raw ? JSON.parse(raw) : null;
+      }
+
+      function guardAdminPage() {
+        const user = getLoggedInUser();
+        if (!user || user.role !== "ADMIN") {
+          window.location.href = "/login";
+        }
+      }
+
+      function renderWelcomeMessage() {
+        const welcomeEl = document.getElementById("adminWelcomeMessage");
+        if (!welcomeEl) {
+          return;
+        }
+
+        const user = getLoggedInUser();
+        const userLabel = user?.name || user?.email || "Admin";
+        welcomeEl.textContent = `Hello, welcome ${userLabel}`;
+      }
+
+      function logout() {
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "/login";
+      }
+
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toastPopup");
+        if (!toast) {
+          return;
+        }
+
+        toast.textContent = message;
+        toast.className = `toast-popup ${type} show`;
+
+        if (toastTimeoutId) {
+          clearTimeout(toastTimeoutId);
+        }
+
+        toastTimeoutId = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2400);
+      }
+
+      function addService() {
+        const user = getLoggedInUser();
+        const payload = {
+          name: document.getElementById("serviceName").value,
+          price: Number(document.getElementById("servicePrice").value),
+        };
+
+        fetch(`/services?adminId=${user.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Could not add service");
+            }
+            return res.json();
+          })
+          .then(() => {
+            document.getElementById("serviceName").value = "";
+            document.getElementById("servicePrice").value = "";
+            const msg = document.getElementById("serviceMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast("Service saved");
+            loadServices();
+          })
+          .catch((err) => {
+            const msg = document.getElementById("serviceMsg");
+            msg.className = "form-message";
+            msg.textContent = "";
+            showToast(err.message, "error");
+          });
+      }
+
+      function loadServices() {
+        fetch("/services")
+          .then((res) => res.json())
+          .then((data) => {
+            servicesCache = Array.isArray(data) ? data : [];
+            renderServices();
+          });
+      }
+
+      function renderServices() {
+        const box = document.getElementById("servicesList");
+        const q = (document.getElementById("servicesSearch")?.value || "")
+          .trim()
+          .toLowerCase();
+        box.innerHTML = "";
+
+        servicesCache
+          .filter((item) => {
+            if (!q) {
+              return true;
+            }
+            const text = `${item.name || ""} ${item.price ?? ""}`.toLowerCase();
+            return text.includes(q);
+          })
+          .forEach((item) => {
+            const row = document.createElement("div");
+            row.className = "service-row";
+
+            const title = document.createElement("span");
+            title.textContent = `${item.name} - Rs. ${item.price}`;
+
+            const actions = document.createElement("div");
+            actions.className = "row-actions";
+
+            const updateBtn = document.createElement("button");
+            updateBtn.className = "btn-warning";
+            updateBtn.textContent = "Update";
+            updateBtn.onclick = () =>
+              updateService(item.id, item.name, item.price);
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn-danger";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = () =>
+              openDeleteServiceModal(item.id, item.name || "Service");
+
+            actions.appendChild(updateBtn);
+            actions.appendChild(deleteBtn);
+
+            row.appendChild(title);
+            row.appendChild(actions);
+            box.appendChild(row);
+          });
+      }
+
+      function updateService(id, currentName, currentPrice) {
+        const modal = document.getElementById("serviceEditModal");
+        const nameInput = document.getElementById("editServiceName");
+        const priceInput = document.getElementById("editServicePrice");
+        if (!modal || !nameInput || !priceInput) {
+          return;
+        }
+
+        editingServiceId = id;
+        nameInput.value = currentName || "";
+        priceInput.value = currentPrice ?? "";
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+        nameInput.focus();
+      }
+
+      function closeServiceEditModal() {
+        const modal = document.getElementById("serviceEditModal");
+        const nameInput = document.getElementById("editServiceName");
+        const priceInput = document.getElementById("editServicePrice");
+        if (!modal || !nameInput || !priceInput) {
+          return;
+        }
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        editingServiceId = null;
+        nameInput.value = "";
+        priceInput.value = "";
+      }
+
+      function confirmServiceUpdate() {
+        if (editingServiceId == null) {
+          return;
+        }
+
+        const user = getLoggedInUser();
+        const name = document.getElementById("editServiceName").value.trim();
+        const priceText = document.getElementById("editServicePrice").value;
+        if (!name) {
+          return;
+        }
+        if (!priceText) {
+          return;
+        }
+
+        const payload = {
+          name,
+          price: Number(priceText),
+        };
+
+        fetch(`/services/${editingServiceId}?adminId=${user.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).then(() => {
+          closeServiceEditModal();
+          showToast("Service updated");
+          loadServices();
+        });
+      }
+
+      function deleteService(id) {
+        const user = getLoggedInUser();
+        fetch(`/services/${id}?adminId=${user.id}`, { method: "DELETE" }).then(
+          () => {
+            showToast("Service deleted");
+            loadServices();
+          },
+        );
+      }
+
+      function openDeleteServiceModal(id, name) {
+        const modal = document.getElementById("deleteServiceModal");
+        const text = document.getElementById("deleteServiceText");
+        if (!modal || !text) {
+          return;
+        }
+
+        deletingServiceId = id;
+        text.textContent = `Are you sure you want to delete ${name}?`;
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeDeleteServiceModal() {
+        const modal = document.getElementById("deleteServiceModal");
+        const text = document.getElementById("deleteServiceText");
+        if (!modal || !text) {
+          return;
+        }
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        deletingServiceId = null;
+        text.textContent = "Are you sure you want to delete this service?";
+      }
+
+      function confirmDeleteService() {
+        if (deletingServiceId == null) {
+          return;
+        }
+        deleteService(deletingServiceId);
+        closeDeleteServiceModal();
+      }
+
+      function formatDateTime(dateTimeStr) {
+        if (!dateTimeStr) return "Not set";
+        const date = new Date(dateTimeStr);
+        const dateFormatted = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+        const timeFormatted = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+        return `${dateFormatted} at ${timeFormatted}`;
+      }
+
+      function loadAppointments() {
+        const user = getLoggedInUser();
+
+        Promise.all([
+          fetch(`/users?adminId=${user.id}`).then((res) => res.json()),
+          fetch(`/services?adminId=${user.id}`).then((res) => res.json()),
+          fetch(`/appointments?adminId=${user.id}`).then((res) => res.json()),
+        ]).then(([users, services, appointments]) => {
+          const userMap = users.reduce((map, u) => {
+            map[u.id] = u.name;
+            return map;
+          }, {});
+
+          const serviceMap = services.reduce((map, s) => {
+            map[s.id] = s.name;
+            return map;
+          }, {});
+
+          const box = document.getElementById("appointmentsList");
+          appointmentsCache = (
+            Array.isArray(appointments) ? appointments : []
+          ).map((item) => ({
+            id: item.id,
+            userName: userMap[item.userId] || "Unknown",
+            serviceName: serviceMap[item.serviceId] || "Unknown",
+            date: item.date,
+          }));
+
+          renderAppointments();
+        });
+      }
+
+      function renderAppointments() {
+        const box = document.getElementById("appointmentsList");
+        const q = (document.getElementById("appointmentsSearch")?.value || "")
+          .trim()
+          .toLowerCase();
+        box.innerHTML = "";
+
+        appointmentsCache
+          .filter((item) => {
+            if (!q) {
+              return true;
+            }
+            const text =
+              `${item.id} ${item.userName} ${item.serviceName} ${item.date || ""}`.toLowerCase();
+            return text.includes(q);
+          })
+          .forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.id}</td>
+              <td>${item.userName}</td>
+              <td>${item.serviceName}</td>
+              <td>${formatDateTime(item.date)}</td>
+            `;
+            box.appendChild(row);
+          });
+      }
+
+      function downloadAppointmentsPdf() {
+        if (!appointmentsCache || appointmentsCache.length === 0) {
+          showToast("No appointments to download", "error");
+          return;
+        }
+
+        const container = document.createElement("div");
+        container.className = "pdf-container";
+
+        // Header Section
+        const header = document.createElement("div");
+        header.className = "pdf-header";
+
+        const titleBlock = document.createElement("div");
+        titleBlock.className = "pdf-title-block";
+
+        const titleSection = document.createElement("div");
+        titleSection.className = "pdf-title-section";
+        const mainTitle = document.createElement("h1");
+        mainTitle.textContent = "Ceylora Salon";
+        const reportTitle = document.createElement("h2");
+        reportTitle.textContent = "Appointments Report";
+        titleSection.appendChild(mainTitle);
+        titleSection.appendChild(reportTitle);
+
+        const dateSection = document.createElement("div");
+        dateSection.className = "pdf-date-section";
+        const dateLabel = document.createElement("p");
+        dateLabel.textContent = `Generated: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`;
+        dateSection.appendChild(dateLabel);
+
+        titleBlock.appendChild(titleSection);
+        titleBlock.appendChild(dateSection);
+        header.appendChild(titleBlock);
+        container.appendChild(header);
+
+        // Summary Section
+        const summaryBox = document.createElement("div");
+        summaryBox.className = "pdf-summary-box";
+
+        const summaryItem1 = document.createElement("div");
+        summaryItem1.className = "pdf-summary-item";
+        summaryItem1.innerHTML = `
+          <div class="pdf-summary-label">Total Appointments</div>
+          <div class="pdf-summary-value">${appointmentsCache.length}</div>
+        `;
+
+        const summaryItem2 = document.createElement("div");
+        summaryItem2.className = "pdf-summary-item";
+        const uniqueUsers = new Set(appointmentsCache.map((a) => a.userName))
+          .size;
+        summaryItem2.innerHTML = `
+          <div class="pdf-summary-label">Number of Customers</div>
+          <div class="pdf-summary-value">${uniqueUsers}</div>
+        `;
+
+        const summaryItem3 = document.createElement("div");
+        summaryItem3.className = "pdf-summary-item";
+        const uniqueServices = new Set(
+          appointmentsCache.map((a) => a.serviceName),
+        ).size;
+        summaryItem3.innerHTML = `
+          <div class="pdf-summary-label">Services Booked</div>
+          <div class="pdf-summary-value">${uniqueServices}</div>
+        `;
+
+        summaryBox.appendChild(summaryItem1);
+        summaryBox.appendChild(summaryItem2);
+        summaryBox.appendChild(summaryItem3);
+        container.appendChild(summaryBox);
+
+        // Table Section
+        const table = document.createElement("table");
+        table.className = "pdf-table";
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer Name</th>
+              <th>Service</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${appointmentsCache
+              .map(
+                (item) => `
+              <tr>
+                <td>${item.id}</td>
+                <td>${item.userName}</td>
+                <td>${item.serviceName}</td>
+                <td>${formatDateTime(item.date)}</td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        `;
+
+        container.appendChild(table);
+
+        // Footer Section
+        const footer = document.createElement("div");
+        footer.className = "pdf-footer";
+        footer.innerHTML = `
+          <p>Ceylora Salon Management System</p>
+          <p>This is an official report. Please keep for your records.</p>
+        `;
+        container.appendChild(footer);
+
+        // Append to body temporarily for html2pdf to render styles
+        document.body.appendChild(container);
+
+        const filename = `appointments-report-${new Date()
+          .toISOString()
+          .slice(0, 10)}.pdf`;
+
+        html2pdf()
+          .set({
+            margin: 10,
+            filename,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          })
+          .from(container)
+          .save()
+          .then(() => container.remove())
+          .catch(() => container.remove());
+      }
+
+      function loadUsers() {
+        const user = getLoggedInUser();
+        fetch(`/users?adminId=${user.id}`)
+          .then((res) => res.json())
+          .then((data) => {
+            usersCache = Array.isArray(data) ? data : [];
+            renderUsers();
+          });
+      }
+
+      function renderUsers() {
+        const box = document.getElementById("usersList");
+        const q = (document.getElementById("usersSearch")?.value || "")
+          .trim()
+          .toLowerCase();
+        box.innerHTML = "";
+
+        usersCache
+          .filter((item) => {
+            if (!q) {
+              return true;
+            }
+            const text =
+              `${item.name || ""} ${item.email || ""} ${item.contactNo || ""} ${item.role || ""}`.toLowerCase();
+            return text.includes(q);
+          })
+          .forEach((item) => {
+            const name = item.name || "User";
+            const initials =
+              name
+                .trim()
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((part) => part[0]?.toUpperCase() || "")
+                .join("") || "U";
+            const hasProfileImage =
+              typeof item.profileImage === "string" &&
+              item.profileImage.startsWith("data:image/");
+
+            const row = document.createElement("div");
+            row.className = "user-row";
+            row.innerHTML = `
+              <div class="user-head">
+                ${hasProfileImage ? `<img class="user-avatar" src="${item.profileImage}" alt="${name} profile picture" />` : `<div class="user-avatar user-avatar-fallback">${initials}</div>`}
+              </div>
+              <div class="user-details">
+                <div class="user-field"><strong>Name</strong> - ${name}</div>
+                <div class="user-field"><strong>Email</strong> - ${item.email}</div>
+                <div class="user-field"><strong>Contact No</strong> - ${item.contactNo || "-"}</div>
+                <div class="user-field"><strong>Role</strong> - ${item.role}</div>
+              </div>
+              ${item.role === "USER" ? `<button class="btn-danger" onclick='openDeleteUserModal(${item.id}, ${JSON.stringify(item.name || "User")})'>Delete</button>` : ""}
+            `;
+            box.appendChild(row);
+          });
+      }
+
+      function openDeleteUserModal(id, name) {
+        const modal = document.getElementById("deleteUserModal");
+        const text = document.getElementById("deleteUserText");
+        if (!modal || !text) {
+          return;
+        }
+
+        deletingUserId = id;
+        text.textContent = `Are you sure you want to delete ${name}?`;
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeDeleteUserModal() {
+        const modal = document.getElementById("deleteUserModal");
+        const text = document.getElementById("deleteUserText");
+        if (!modal || !text) {
+          return;
+        }
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        deletingUserId = null;
+        text.textContent = "Are you sure you want to delete this user?";
+      }
+
+      function confirmDeleteUser() {
+        if (deletingUserId == null) {
+          return;
+        }
+        deleteUser(deletingUserId);
+        closeDeleteUserModal();
+      }
+
+      function deleteUser(id) {
+        const user = getLoggedInUser();
+        fetch(`/users/${id}?adminId=${user.id}`, { method: "DELETE" }).then(
+          () => {
+            loadUsers();
+            loadAppointments();
+          },
+        );
+      }
+
+      guardAdminPage();
+      renderWelcomeMessage();
+      loadServices();
+      loadAppointments();
+      loadUsers();
+      switchTab("add-service");
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeServiceEditModal();
+          closeDeleteUserModal();
+          closeDeleteServiceModal();
+        }
+      });
+
+      const serviceEditModal = document.getElementById("serviceEditModal");
+      if (serviceEditModal) {
+        serviceEditModal.addEventListener("click", (event) => {
+          if (event.target === serviceEditModal) {
+            closeServiceEditModal();
+          }
+        });
+      }
+
+      const deleteUserModal = document.getElementById("deleteUserModal");
+      if (deleteUserModal) {
+        deleteUserModal.addEventListener("click", (event) => {
+          if (event.target === deleteUserModal) {
+            closeDeleteUserModal();
+          }
+        });
+      }
+
+      const deleteServiceModal = document.getElementById("deleteServiceModal");
+      if (deleteServiceModal) {
+        deleteServiceModal.addEventListener("click", (event) => {
+          if (event.target === deleteServiceModal) {
+            closeDeleteServiceModal();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
